@@ -1,0 +1,1365 @@
+# ═══════════════════════════════════════
+# AgentForge Blueprint — 机器可读蓝图
+# 供 AI IDE (Cursor/Windsurf/Cline) 执行
+# ═══════════════════════════════════════
+
+version: "1.0"
+generated_at: "2025-01-01T00:00:00Z"
+
+# ─── 项目基本信息 ───
+project:
+  name: "LifeButler"
+  description: "主动关怀型 AI 个人生活管家，通过自然语言对话管理日程、财务、健康、出行等 15 大生活场景"
+  type: "gui"
+  platform: "web"
+  future_platforms: ["mobile", "desktop"]
+
+# ─── 技术栈 ───
+tech_stack:
+  language: "Python 3.11+ / TypeScript 5+"
+  runtime: "Python 3.11 + Node.js 18"
+  package_manager: "pip + npm"
+  backend:
+    framework: "FastAPI"
+    port: 8000
+    orm: "SQLAlchemy 2.0"
+    migration: "Alembic"
+    auth: "python-jose (JWT) + bcrypt"
+  frontend:
+    framework: "React 18"
+    ui_library: "自定义组件"
+    css_framework: "TailwindCSS 3"
+    build_tool: "Vite"
+    state_management: "Zustand"
+    chart_library: "Recharts"
+    icon_library: "Lucide React"
+  testing:
+    unit: "pytest + pytest-asyncio (后端) / Jest + React Testing Library (前端)"
+    integration: "pytest + httpx AsyncClient"
+    e2e: "Playwright"
+  additional_dependencies:
+    - name: "langchain"
+      version: "latest"
+      purpose: "AI Agent 框架"
+    - name: "langgraph"
+      version: "latest"
+      purpose: "Agent 编排图"
+    - name: "anthropic"
+      version: "latest"
+      purpose: "Claude API 客户端"
+    - name: "sqlalchemy[asyncio]"
+      version: ">=2.0"
+      purpose: "异步 ORM"
+    - name: "asyncpg"
+      version: "latest"
+      purpose: "PostgreSQL 异步驱动"
+    - name: "redis"
+      version: "latest"
+      purpose: "Redis 客户端"
+    - name: "cryptography"
+      version: "latest"
+      purpose: "AES-256 数据加密"
+    - name: "websockets"
+      version: "latest"
+      purpose: "WebSocket 支持"
+    - name: "httpx"
+      version: "latest"
+      purpose: "异步 HTTP 客户端（外部 API 调用）"
+    - name: "feedparser"
+      version: "latest"
+      purpose: "RSS 新闻源解析"
+    - name: "notion-client"
+      version: "latest"
+      purpose: "Notion API 客户端"
+    - name: "react-router-dom"
+      version: "latest"
+      purpose: "前端路由"
+    - name: "zustand"
+      version: "latest"
+      purpose: "前端状态管理"
+    - name: "recharts"
+      version: "latest"
+      purpose: "数据图表"
+    - name: "lucide-react"
+      version: "latest"
+      purpose: "图标库"
+    - name: "axios"
+      version: "latest"
+      purpose: "HTTP 请求"
+
+# ─── AI 模型配置 ───
+ai_config:
+  provider: "custom-anthropic"
+  model: "claude-sonnet-4-6"
+  api_key_env: "CUSTOM_API_KEY"
+  base_url: "https://cursor.scihub.edu.kg/api"
+  parameters:
+    temperature: 0.7
+    max_tokens: 4096
+    top_p: 0.9
+    stream: true
+
+# ─── Agent 定义 ───
+agent:
+  role: "LifeButler 是一位温暖贴心的 AI 生活管家，擅长通过自然语言理解用户需求并调用合适的工具来管理用户的日常生活。"
+  goal: "让用户通过一个统一的对话入口高效管理所有生活事务，并在用户登录时主动提供关怀性的汇总和建议。"
+  pattern: "react"
+  system_prompt: |
+    你是 LifeButler，一位温暖贴心的 AI 生活管家。
+
+    你的性格：
+    - 温暖亲和，像一个关心你的朋友
+    - 主动关怀，会提醒用户注意天气、喝水、休息
+    - 高效专业，快速理解用户意图并完成任务
+    - 说话自然，适当使用"~"、"呀"、"哦"等语气词和 Emoji
+
+    问候语规则（根据时间段）：
+    - 早晨(6-11)："早上好~今天也要元气满满哦！"
+    - 中午(11-14)："午安~记得好好吃午饭呀"
+    - 下午(14-18)："下午好~今天辛苦了"
+    - 晚上(18-22)："晚上好~今天过得怎么样？"
+    - 深夜(22-6)："夜深了，早点休息哦~"
+
+    你可以使用以下工具来帮助用户：
+    1. 日程管理 - 创建/查询/修改/删除日程
+    2. 待办管理 - 管理待办事项
+    3. 天气查询 - 查天气和穿衣建议
+    4. 新闻摘要 - 获取热点新闻
+    5. 记账理财 - 记录收支和统计
+    6. 饮食健康 - 记录饮食和营养分析
+    7. 习惯打卡 - 管理和打卡习惯
+    8. 购物清单 - 管理购物清单
+    9. 读书学习 - 管理读书计划和进度
+    10. 智能家居 - 控制智能设备
+    11. 邮件管理 - 查看和回复邮件
+    12. 出行规划 - 路线和交通查询
+    13. 备忘笔记 - 记录笔记并同步 Notion
+
+    规则：
+    - 理解用户的自然语言并调用正确的工具
+    - 如果用户的请求模糊，友好地追问确认
+    - 执行操作后给出简洁友好的确认
+    - 适当主动关怀（提醒喝水、注意天气等）
+  constraints:
+    - "每次只调用必要的工具，避免过度调用"
+    - "敏感数据（财务、邮件）必须通过加密服务存取"
+    - "外部 API 调用失败时必须有降级策略和友好提示"
+    - "所有操作必须在用户认证后才可执行"
+  capabilities:
+    - "自然语言意图识别与多工具路由"
+    - "流式对话输出"
+    - "主动关怀汇总推送"
+    - "多功能模块协同（如出行+天气联合建议）"
+  memory:
+    type: "hybrid"
+    max_history: 20
+    storage: "Redis（短期会话缓存）+ PostgreSQL（长期历史存储）"
+
+# ─── 工具定义 ───
+tools:
+  - name: "calendar_tool"
+    type: "database"
+    description: "日程管理 — 创建/查询/修改/删除日程事件"
+    config:
+      table: "calendar_events"
+      operations: ["create", "read", "update", "delete"]
+      features: ["repeat_events", "conflict_detection"]
+
+  - name: "todo_tool"
+    type: "database"
+    description: "待办管理 — 任务 CRUD + 优先级 + 截止日期"
+    config:
+      table: "todos"
+      operations: ["create", "read", "update", "delete"]
+      features: ["priority", "due_date", "category", "status_filter"]
+
+  - name: "weather_tool"
+    type: "api"
+    description: "天气查询 — 和风天气实时天气 + 7日预报 + 穿衣建议"
+    config:
+      provider: "QWeather"
+      api_key_env: "QWEATHER_API_KEY"
+      base_url: "https://devapi.qweather.com/v7"
+      endpoints:
+        realtime: "/weather/now"
+        forecast: "/weather/7d"
+        indices: "/indices/1d"
+
+  - name: "news_tool"
+    type: "api"
+    description: "新闻摘要 — RSS 多源聚合 + AI 摘要生成"
+    config:
+      sources: ["RSS feeds"]
+      ai_summary: true
+
+  - name: "finance_tool"
+    type: "database"
+    description: "记账理财 — 收支记录 + 分类统计 + 预算预警"
+    config:
+      table: "transactions"
+      operations: ["create", "read", "statistics"]
+      features: ["auto_categorize", "budget_alert", "monthly_report"]
+      encryption: true
+
+  - name: "health_tool"
+    type: "database"
+    description: "饮食健康 — 饮食记录 + 营养估算 + 饮水提醒"
+    config:
+      table: "meal_records"
+      operations: ["create", "read", "statistics"]
+      features: ["nutrition_estimate", "water_reminder"]
+
+  - name: "habit_tool"
+    type: "database"
+    description: "习惯打卡 — 创建习惯 + 打卡 + 连续天数统计"
+    config:
+      tables: ["habits", "habit_check_ins"]
+      operations: ["create", "check_in", "statistics"]
+      features: ["streak_count", "completion_rate", "break_reminder"]
+
+  - name: "shopping_tool"
+    type: "database"
+    description: "购物清单 — 商品添加 + 分类 + 勾选已购"
+    config:
+      table: "shopping_items"
+      operations: ["create", "read", "update", "delete"]
+      features: ["auto_categorize", "batch_add", "clear_purchased"]
+
+  - name: "reading_tool"
+    type: "database"
+    description: "读书学习 — 读书计划 + 进度追踪 + 落后提醒"
+    config:
+      table: "reading_plans"
+      operations: ["create", "update_progress", "statistics"]
+      features: ["progress_tracking", "behind_schedule_alert"]
+
+  - name: "smarthome_tool"
+    type: "custom"
+    description: "智能家居 — 通用设备控制接口（Mock 模式）"
+    config:
+      adapter_pattern: true
+      mock_mode: true
+      supported_actions: ["turn_on", "turn_off", "set_temperature", "set_brightness"]
+
+  - name: "email_tool"
+    type: "api"
+    description: "邮件管理 — QQ 邮箱 IMAP 收件 + SMTP 发件 + AI 摘要"
+    config:
+      provider: "QQ Mail"
+      imap_host: "imap.qq.com"
+      imap_port: 993
+      smtp_host: "smtp.qq.com"
+      smtp_port: 465
+      email_env: "QQ_EMAIL_ADDRESS"
+      auth_code_env: "QQ_EMAIL_AUTH_CODE"
+      encryption: true
+
+  - name: "travel_tool"
+    type: "api"
+    description: "出行规划 — 高德地图路线规划 + POI 搜索"
+    config:
+      provider: "AMap"
+      api_key_env: "AMAP_API_KEY"
+      base_url: "https://restapi.amap.com/v3"
+      endpoints:
+        direction_driving: "/direction/driving"
+        direction_transit: "/direction/transit/integrated"
+        direction_walking: "/direction/walking"
+        poi_search: "/place/around"
+        geocode: "/geocode/geo"
+
+  - name: "notion_tool"
+    type: "api"
+    description: "备忘笔记 — 本地存储 + Notion 同步"
+    config:
+      provider: "Notion"
+      api_key_env: "NOTION_API_KEY"
+      database_id_env: "NOTION_DATABASE_ID"
+      base_url: "https://api.notion.com/v1"
+      fallback: "local_storage"
+
+# ─── UI 设计（仅 GUI） ───
+ui_design:
+  theme: "auto"
+  style: "温暖治愈"
+  colors:
+    primary: "#E8835A"
+    secondary: "#7BB6A4"
+    accent: "#F2B84B"
+    background: "#FFF9F5"
+    surface: "#FFFFFF"
+    text_primary: "#3D3028"
+    text_secondary: "#9B8E82"
+    border: "#F0E6DD"
+    success: "#7BB6A4"
+    warning: "#F2B84B"
+    error: "#E06B5E"
+  typography:
+    font_family: "'Noto Sans SC', 'PingFang SC', sans-serif"
+    mono_font: "'JetBrains Mono', 'Fira Code', monospace"
+  border_radius:
+    button: "12px"
+    input: "12px"
+    card: "16px"
+  layout: "sidebar"
+  responsive: true
+  icon_library: "Lucide React"
+
+# ─── 目录结构 ───
+directory_structure: |
+  LifeButler/
+  ├── backend/
+  │   ├── app/
+  │   │   ├── __init__.py
+  │   │   ├── main.py
+  │   │   ├── agent/
+  │   │   │   ├── __init__.py
+  │   │   │   ├── core.py
+  │   │   │   ├── memory.py
+  │   │   │   ├── proactive.py
+  │   │   │   └── prompts.py
+  │   │   ├── tools/
+  │   │   │   ├── __init__.py
+  │   │   │   ├── base.py
+  │   │   │   ├── calendar.py
+  │   │   │   ├── todo.py
+  │   │   │   ├── weather.py
+  │   │   │   ├── news.py
+  │   │   │   ├── finance.py
+  │   │   │   ├── health.py
+  │   │   │   ├── habit.py
+  │   │   │   ├── shopping.py
+  │   │   │   ├── reading.py
+  │   │   │   ├── smarthome.py
+  │   │   │   ├── email_tool.py
+  │   │   │   ├── travel.py
+  │   │   │   └── notion.py
+  │   │   ├── api/
+  │   │   │   ├── __init__.py
+  │   │   │   ├── auth.py
+  │   │   │   ├── chat.py
+  │   │   │   ├── dashboard.py
+  │   │   │   └── deps.py
+  │   │   ├── models/
+  │   │   │   ├── __init__.py
+  │   │   │   ├── user.py
+  │   │   │   ├── calendar.py
+  │   │   │   ├── todo.py
+  │   │   │   ├── finance.py
+  │   │   │   ├── health.py
+  │   │   │   ├── habit.py
+  │   │   │   ├── shopping.py
+  │   │   │   ├── reading.py
+  │   │   │   ├── note.py
+  │   │   │   └── chat.py
+  │   │   ├── schemas/
+  │   │   ├── services/
+  │   │   │   ├── __init__.py
+  │   │   │   ├── auth.py
+  │   │   │   ├── ai_provider.py
+  │   │   │   └── encryption.py
+  │   │   ├── config/
+  │   │   │   ├── __init__.py
+  │   │   │   ├── settings.py
+  │   │   │   └── database.py
+  │   │   └── utils/
+  │   ├── tests/
+  │   │   ├── unit/
+  │   │   ├── integration/
+  │   │   └── e2e/
+  │   ├── alembic/
+  │   ├── alembic.ini
+  │   ├── requirements.txt
+  │   └── Dockerfile
+  ├── frontend/
+  │   ├── src/
+  │   │   ├── App.tsx
+  │   │   ├── main.tsx
+  │   │   ├── components/
+  │   │   │   ├── Chat/
+  │   │   │   ├── Dashboard/
+  │   │   │   ├── Auth/
+  │   │   │   └── Common/
+  │   │   ├── pages/
+  │   │   ├── hooks/
+  │   │   ├── stores/
+  │   │   ├── services/
+  │   │   ├── styles/
+  │   │   └── utils/
+  │   ├── public/
+  │   ├── index.html
+  │   ├── package.json
+  │   ├── tsconfig.json
+  │   ├── tailwind.config.js
+  │   ├── vite.config.ts
+  │   └── Dockerfile
+  ├── docker-compose.yml
+  ├── .env.example
+  ├── .gitignore
+  ├── TODO.md
+  ├── DEV_LOG.md
+  └── FAILURES.md
+
+# ─── 开发架构（固定） ───
+development:
+  methodology: "tdd"
+  architecture: "external-memory-dual-phase"
+
+  external_memory:
+    - file: "TODO.md"
+      purpose: "任务状态跟踪"
+    - file: "DEV_LOG.md"
+      purpose: "开发日志记录"
+    - file: "FAILURES.md"
+      purpose: "失败记录"
+    - file: ".git"
+      purpose: "版本控制与回滚"
+
+  phase_1_initialization:
+    description: "项目初始化 — 仅运行一次"
+    run_once: true
+    steps:
+      - id: "init-001"
+        action: "创建项目目录结构"
+        command: |
+          mkdir -p backend/app/{agent,tools,api,models,schemas,services,config,utils}
+          mkdir -p backend/tests/{unit,integration,e2e}
+          mkdir -p backend/alembic/versions
+          touch backend/app/__init__.py
+          touch backend/app/agent/__init__.py
+          touch backend/app/tools/__init__.py
+          touch backend/app/api/__init__.py
+          touch backend/app/models/__init__.py
+          touch backend/app/schemas/__init__.py
+          touch backend/app/services/__init__.py
+          touch backend/app/config/__init__.py
+          touch backend/app/utils/__init__.py
+        validation: "目录结构存在且 __init__.py 文件已创建"
+
+      - id: "init-002"
+        action: "初始化 Python 虚拟环境"
+        command: |
+          cd backend
+          python -m venv venv
+        validation: "backend/venv 目录存在"
+
+      - id: "init-003"
+        action: "创建并安装后端依赖"
+        files:
+          - path: "backend/requirements.txt"
+            content: |
+              fastapi>=0.104.0
+              uvicorn[standard]>=0.24.0
+              sqlalchemy[asyncio]>=2.0
+              asyncpg>=0.29.0
+              alembic>=1.13.0
+              redis>=5.0.0
+              python-jose[cryptography]>=3.3.0
+              passlib[bcrypt]>=1.7.4
+              pydantic>=2.5.0
+              pydantic-settings>=2.1.0
+              langchain>=0.1.0
+              langgraph>=0.0.40
+              anthropic>=0.40.0
+              httpx>=0.25.0
+              websockets>=12.0
+              cryptography>=41.0.0
+              feedparser>=6.0.0
+              notion-client>=2.2.0
+              python-multipart>=0.0.6
+              pytest>=7.4.0
+              pytest-asyncio>=0.23.0
+              pytest-cov>=4.1.0
+        command: |
+          cd backend
+          source venv/bin/activate
+          pip install -r requirements.txt
+        validation: "依赖安装成功，无报错"
+
+      - id: "init-004"
+        action: "初始化 React 前端项目"
+        command: |
+          npm create vite@latest frontend -- --template react-ts
+          cd frontend
+          npm install
+          npm install -D tailwindcss postcss autoprefixer
+          npx tailwindcss init -p
+          npm install react-router-dom zustand axios recharts lucide-react
+          npm install -D @types/react-router-dom jest @testing-library/react @testing-library/jest-dom
+        validation: "frontend/node_modules 存在，package.json 包含所有依赖"
+
+      - id: "init-005"
+        action: "创建环境配置文件"
+        files:
+          - path: ".env.example"
+            content: |
+              # ─── AI 模型 ───
+              CUSTOM_API_KEY=your-api-key
+              AI_MODEL=claude-sonnet-4-6
+              AI_BASE_URL=https://cursor.scihub.edu.kg/api
+              AI_TEMPERATURE=0.7
+              AI_MAX_TOKENS=4096
+
+              # ─── 数据库 ───
+              DATABASE_URL=postgresql://lifebutler:password@localhost:5432/lifebutler
+              REDIS_URL=redis://localhost:6379/0
+
+              # ─── 安全 ───
+              SECRET_KEY=your-jwt-secret-key-change-this
+              ENCRYPTION_KEY=your-aes-256-key-change-this
+
+              # ─── 外部 API ───
+              QWEATHER_API_KEY=your-qweather-key
+              AMAP_API_KEY=your-amap-key
+              QQ_EMAIL_ADDRESS=your-qq-email@qq.com
+              QQ_EMAIL_AUTH_CODE=your-auth-code
+              NOTION_API_KEY=your-notion-key
+              NOTION_DATABASE_ID=your-notion-db-id
+          - path: ".gitignore"
+            content: |
+              # Python
+              __pycache__/
+              *.py[cod]
+              *$py.class
+              venv/
+              .env
+              *.egg-info/
+
+              # Node
+              node_modules/
+              dist/
+              .vite/
+
+              # IDE
+              .vscode/
+              .idea/
+
+              # OS
+              .DS_Store
+              Thumbs.db
+
+              # Testing
+              .coverage
+              htmlcov/
+              .pytest_cache/
+
+              # Database
+              *.db
+              *.sqlite3
+        validation: "文件存在且内容正确"
+
+      - id: "init-006"
+        action: "初始化 Git 仓库"
+        commands:
+          - "git init"
+          - "git add ."
+          - "git commit -m 'chore: project initialization'"
+        validation: "git log 显示首次提交"
+
+      - id: "init-007"
+        action: "创建 TODO.md"
+        file: "TODO.md"
+        content: "参见 blueprint 中生成的 TODO.md 内容"
+        validation: "文件存在，包含所有任务"
+
+      - id: "init-008"
+        action: "创建 UI_DESIGN_GUIDE.md"
+        condition: "project.type == 'gui'"
+        file: "UI_DESIGN_GUIDE.md"
+        content: "参见 blueprint 中生成的 UI_DESIGN_GUIDE.md 内容"
+        validation: "文件存在"
+
+      - id: "init-009"
+        action: "创建开发日志和失败记录"
+        files:
+          - path: "DEV_LOG.md"
+            content: |
+              # 开发日志
+              ## 项目初始化
+              - 项目脚手架搭建完成
+              - 后端依赖安装成功（FastAPI + LangChain + SQLAlchemy）
+              - 前端依赖安装成功（React + TailwindCSS + Zustand）
+              - Git 仓库初始化完成
+              - 任务清单创建完成（共 46 个任务）
+          - path: "FAILURES.md"
+            content: |
+              # 失败记录
+              暂无失败记录。
+        validation: "文件存在"
+
+      - id: "init-010"
+        action: "创建测试配置"
+        files:
+          - path: "backend/pytest.ini"
+            content: |
+              [pytest]
+              asyncio_mode = auto
+              testpaths = tests
+              python_files = test_*.py
+              python_functions = test_*
+              addopts = -v --tb=short
+          - path: "frontend/jest.config.ts"
+            content: |
+              export default {
+                testEnvironment: 'jsdom',
+                transform: {
+                  '^.+\\.tsx?$': 'ts-jest',
+                },
+                moduleNameMapper: {
+                  '\\.(css|less|scss)$': 'identity-obj-proxy',
+                },
+                setupFilesAfterSetup: ['@testing-library/jest-dom'],
+              };
+        validation: "测试命令可运行（即使 0 个测试用例）"
+
+      - id: "init-011"
+        action: "提交初始化完成状态"
+        commands:
+          - "git add ."
+          - "git commit -m 'chore: initialization complete, ready for development'"
+        validation: "git status 显示 clean"
+
+  phase_2_development:
+    description: "增量循环开发"
+    loop: true
+    max_retries_per_feature: 3
+
+    on_failure:
+      strategy: "skip_and_log"
+      actions:
+        - "将错误信息追加到 FAILURES.md"
+        - "git checkout . （回滚未提交的更改）"
+        - "在 TODO.md 中将该任务标记为 [Failed]"
+        - "继续下一个任务"
+
+    on_complete:
+      actions:
+        - "展示 TODO.md 最终状态"
+        - "如果有 [Failed] 任务，展示 FAILURES.md 汇总"
+        - "运行全量测试，展示结果"
+
+    cycle:
+      - step: "read_state"
+        description: "读取当前状态"
+        actions:
+          - "读取 TODO.md，找到第一个 [Todo] 状态的任务"
+          - "读取 DEV_LOG.md 末尾 20 行，了解上轮情况"
+          - "如果是 GUI 任务，读取 UI_DESIGN_GUIDE.md"
+          - "将当前任务在 TODO.md 中标记为 [In Progress]"
+        output: "当前要开发的任务详情"
+
+      - step: "write_test"
+        description: "编写测试用例（TDD - Red）"
+        actions:
+          - "根据任务描述和 blueprint.yaml 中的测试定义，编写测试"
+          - "运行测试，确认当前状态下测试失败（红灯）"
+        output: "测试文件路径"
+
+      - step: "write_code"
+        description: "实现功能代码"
+        rules:
+          - "一次只实现当前任务，不要越界"
+          - "如果是 GUI 项目，严格遵循 UI_DESIGN_GUIDE.md 的设计规范"
+          - "代码要有适当注释"
+          - "遵循项目已有的代码风格"
+        output: "修改/新增的文件列表"
+
+      - step: "run_test"
+        description: "运行测试验证"
+        actions:
+          - "运行当前任务相关的测试"
+          - "如果通过（绿灯）→ 进入 git_commit"
+          - "如果失败（红灯）→ 分析错误 → 修改代码 → 重新运行"
+          - "最多重试 3 次"
+        output: "测试结果 (pass/fail)"
+
+      - step: "git_commit"
+        description: "提交代码"
+        actions:
+          - "git add ."
+          - "git commit -m 'feat(T-{TASK_ID}): {TASK_SUMMARY}'"
+        output: "commit hash"
+
+      - step: "update_state"
+        description: "更新项目状态"
+        actions:
+          - "TODO.md: 将任务标记为 [Done] 或 [Failed]"
+          - "DEV_LOG.md: 追加本轮开发记录"
+          - "git add . && git commit -m 'docs: update progress for T-{TASK_ID}'"
+        output: "更新后的 TODO.md"
+
+      - step: "clear_context"
+        description: "清空上下文，准备下一轮"
+        note: "本轮对话结束。下一轮将从 read_state 重新开始，通过读取文件恢复上下文。"
+
+    # ─── 功能任务列表 ───
+    features:
+      # ── 基础架构 P0 ──
+      - id: "T-100"
+        name: "用户注册 API"
+        description: "实现邮箱+密码注册接口，密码 bcrypt 哈希存储，数据库持久化"
+        priority: "P0"
+        dependencies: []
+        estimated_complexity: "medium"
+        implementation_notes: |
+          - 使用 FastAPI 路由 POST /api/auth/register
+          - Pydantic 模型校验邮箱格式和密码强度
+          - 密码使用 passlib bcrypt 哈希
+          - 检查邮箱唯一性，重复返回 409
+          - 成功返回 user_id + 201
+        tests:
+          - id: "TC-100-1"
+            description: "有效邮箱注册成功"
+            type: "unit"
+            expected_result: "201 + user_id"
+          - id: "TC-100-2"
+            description: "重复邮箱注册失败"
+            type: "unit"
+            expected_result: "409 Conflict"
+
+      - id: "T-101"
+        name: "用户登录 API"
+        description: "实现邮箱+密码登录接口，验证密码后生成 JWT Token"
+        priority: "P0"
+        dependencies: ["T-100"]
+        estimated_complexity: "medium"
+        implementation_notes: |
+          - POST /api/auth/login
+          - 验证邮箱密码，使用 python-jose 生成 JWT
+          - Token 包含 user_id 和过期时间（24h）
+          - 错误密码返回 401
+        tests:
+          - id: "TC-101-1"
+            description: "正确密码登录成功"
+            type: "unit"
+            expected_result: "200 + JWT Token"
+          - id: "TC-101-2"
+            description: "错误密码登录失败"
+            type: "unit"
+            expected_result: "401 Unauthorized"
+
+      - id: "T-102"
+        name: "JWT 认证中间件"
+        description: "实现 FastAPI 依赖注入的 JWT 校验中间件"
+        priority: "P0"
+        dependencies: ["T-101"]
+        estimated_complexity: "low"
+        tests:
+          - id: "TC-102-1"
+            description: "有效 Token 通过验证"
+            type: "unit"
+            expected_result: "返回 user 对象"
+          - id: "TC-102-2"
+            description: "过期 Token 拒绝"
+            type: "unit"
+            expected_result: "401"
+
+      - id: "T-103"
+        name: "AI 模型适配器"
+        description: "实现 CustomAnthropicProvider，支持 claude-sonnet-4-6 via 自定义端点"
+        priority: "P0"
+        dependencies: []
+        estimated_complexity: "medium"
+        implementation_notes: |
+          - 实现 AIProvider 抽象基类
+          - CustomAnthropicProvider 使用 anthropic SDK，配置 base_url
+          - 支持流式和同步两种调用
+          - 支持 tool_use（工具调用）
+          - 配置从环境变量读取
+        tests:
+          - id: "TC-103-1"
+            description: "适配器实例化成功"
+            type: "unit"
+            expected_result: "provider 对象"
+          - id: "TC-103-2"
+            description: "无效 Key 友好报错"
+            type: "unit"
+            expected_result: "友好错误提示"
+
+      - id: "T-104"
+        name: "WebSocket 对话端点"
+        description: "实现 WebSocket 对话接口，支持 JWT 认证和流式响应"
+        priority: "P0"
+        dependencies: ["T-102", "T-103"]
+        estimated_complexity: "high"
+        tests:
+          - id: "TC-104-1"
+            description: "WebSocket 连接建立"
+            type: "integration"
+            expected_result: "连接成功"
+          - id: "TC-104-2"
+            description: "流式消息返回"
+            type: "integration"
+            expected_result: "收到流式 chunks"
+
+      - id: "T-105"
+        name: "前端登录/注册页面"
+        description: "实现登录和注册页面，遵循 UI_DESIGN_GUIDE.md 温暖治愈风格"
+        priority: "P0"
+        dependencies: ["T-100", "T-101"]
+        estimated_complexity: "medium"
+        implementation_notes: |
+          - 温暖治愈风格配色
+          - 表单校验（邮箱格式、密码长度）
+          - 登录成功后存储 JWT 到 localStorage
+          - 路由守卫：未登录重定向到登录页
+        tests:
+          - id: "TC-105-1"
+            description: "登录表单渲染"
+            type: "unit"
+            expected_result: "表单元素存在"
+
+      - id: "T-106"
+        name: "前端对话界面"
+        description: "实现聊天气泡界面，支持消息输入和流式显示"
+        priority: "P0"
+        dependencies: ["T-104", "T-105"]
+        estimated_complexity: "high"
+        implementation_notes: |
+          - 用户气泡右对齐，管家气泡左对齐（带头像）
+          - 流式显示效果（字符逐个出现）
+          - 消息输入框 + 发送按钮
+          - WebSocket 连接管理
+          - 遵循 UI_DESIGN_GUIDE.md 配色和圆角
+        tests:
+          - id: "TC-106-1"
+            description: "对话气泡正确渲染"
+            type: "unit"
+            expected_result: "用户/AI 气泡样式正确"
+
+      - id: "T-107"
+        name: "LangGraph Agent 核心编排"
+        description: "实现 ReAct 模式 Agent，支持多工具路由"
+        priority: "P0"
+        dependencies: ["T-103"]
+        estimated_complexity: "high"
+        implementation_notes: |
+          - 使用 LangGraph 构建 Agent 图
+          - ReAct 模式：推理 → 行动 → 观察 循环
+          - System Prompt 注入管家人设
+          - 工具注册机制（后续工具注册到此处）
+        tests:
+          - id: "TC-107-1"
+            description: "Agent 正确路由到工具"
+            type: "unit"
+            expected_result: "调用正确的工具函数"
+
+      - id: "T-108"
+        name: "数据加密服务"
+        description: "实现 AES-256 加密/解密服务，用于敏感数据保护"
+        priority: "P0"
+        dependencies: []
+        estimated_complexity: "medium"
+        tests:
+          - id: "TC-108-1"
+            description: "加密后解密还原"
+            type: "unit"
+            expected_result: "原文一致"
+          - id: "TC-108-2"
+            description: "不同数据加密结果不同"
+            type: "unit"
+            expected_result: "密文不同"
+
+      - id: "T-109"
+        name: "基础数据库模型"
+        description: "创建 User, ChatHistory 表及 Alembic 迁移"
+        priority: "P0"
+        dependencies: []
+        estimated_complexity: "medium"
+        tests:
+          - id: "TC-109-1"
+            description: "User 模型 CRUD"
+            type: "unit"
+            expected_result: "增删改查成功"
+
+      # ── 日程与待办 P0 ──
+      - id: "T-110"
+        name: "日程/待办数据库模型"
+        description: "创建 CalendarEvent, Todo 表及迁移"
+        priority: "P0"
+        dependencies: ["T-109"]
+        estimated_complexity: "low"
+        tests:
+          - id: "TC-110-1"
+            description: "模型 CRUD 操作"
+            type: "unit"
+            expected_result: "增删改查成功"
+
+      - id: "T-111"
+        name: "日程管理工具"
+        description: "实现日程 CRUD + 重复事件 + 冲突检测"
+        priority: "P0"
+        dependencies: ["T-110"]
+        estimated_complexity: "high"
+        tests:
+          - id: "TC-111-1"
+            description: "创建日程"
+            type: "unit"
+            expected_result: "日程创建成功"
+          - id: "TC-111-2"
+            description: "冲突检测"
+            type: "unit"
+            expected_result: "检测到时间冲突"
+
+      - id: "T-112"
+        name: "待办管理工具"
+        description: "实现待办 CRUD + 优先级 + 截止日期 + 分类"
+        priority: "P0"
+        dependencies: ["T-110"]
+        estimated_complexity: "medium"
+        tests:
+          - id: "TC-112-1"
+            description: "创建待办"
+            type: "unit"
+            expected_result: "待办创建成功"
+          - id: "TC-112-2"
+            description: "按优先级筛选"
+            type: "unit"
+            expected_result: "筛选结果正确"
+
+      - id: "T-113"
+        name: "注册日程/待办工具到 Agent"
+        description: "将日程和待办工具注册到 LangGraph Agent，测试自然语言调用"
+        priority: "P0"
+        dependencies: ["T-107", "T-111", "T-112"]
+        estimated_complexity: "medium"
+        tests:
+          - id: "TC-113-1"
+            description: "自然语言创建日程"
+            type: "integration"
+            expected_result: "Agent 正确调用日程工具"
+
+      # ── 记账 P0 ──
+      - id: "T-114"
+        name: "财务数据库模型"
+        description: "创建 Transaction 表及迁移"
+        priority: "P0"
+        dependencies: ["T-109"]
+        estimated_complexity: "low"
+        tests:
+          - id: "TC-114-1"
+            description: "Transaction CRUD"
+            type: "unit"
+            expected_result: "增删改查成功"
+
+      - id: "T-115"
+        name: "记账工具"
+        description: "实现收支记录、自然语言解析金额/分类/日期"
+        priority: "P0"
+        dependencies: ["T-114"]
+        estimated_complexity: "medium"
+        tests:
+          - id: "TC-115-1"
+            description: "记录支出"
+            type: "unit"
+            expected_result: "记录成功 + 自动分类"
+
+      - id: "T-116"
+        name: "财务统计"
+        description: "日/周/月统计、分类饼图数据、预算预警"
+        priority: "P0"
+        dependencies: ["T-115"]
+        estimated_complexity: "medium"
+        tests:
+          - id: "TC-116-1"
+            description: "月度统计"
+            type: "unit"
+            expected_result: "统计数据正确"
+
+      - id: "T-117"
+        name: "财务数据加密存储"
+        description: "集成 AES-256 加密到财务数据存取流程"
+        priority: "P0"
+        dependencies: ["T-108", "T-115"]
+        estimated_complexity: "low"
+        tests:
+          - id: "TC-117-1"
+            description: "数据加密存储"
+            type: "unit"
+            expected_result: "数据库中为密文"
+
+      # ── 主动关怀 P0 ──
+      - id: "T-118"
+        name: "主动关怀引擎"
+        description: "登录触发、并行查询各模块、AI 组织温暖汇总"
+        priority: "P0"
+        dependencies: ["T-107", "T-111", "T-112", "T-115"]
+        estimated_complexity: "high"
+        tests:
+          - id: "TC-118-1"
+            description: "生成今日概览"
+            type: "integration"
+            expected_result: "汇总包含多模块数据"
+
+      - id: "T-119"
+        name: "前端今日概览卡片"
+        description: "管家问候 + 分区块展示天气/日程/待办/提醒"
+        priority: "P0"
+        dependencies: ["T-118", "T-106"]
+        estimated_complexity: "medium"
+        tests:
+          - id: "TC-119-1"
+            description: "概览卡片渲染"
+            type: "unit"
+            expected_result: "卡片正确显示"
+
+      - id: "T-120"
+        name: "导航栏和页面路由"
+        description: "底部导航栏 + React Router 页面切换（首页/对话/面板/设置）"
+        priority: "P0"
+        dependencies: ["T-106"]
+        estimated_complexity: "medium"
+        tests:
+          - id: "TC-120-1"
+            description: "页面路由切换"
+            type: "unit"
+            expected_result: "路由正确切换"
+
+      # ── P1 功能 ──
+      - id: "T-121"
+        name: "健康/习惯数据库模型"
+        description: "创建 MealRecord, Habit, HabitCheckIn 表"
+        priority: "P1"
+        dependencies: ["T-109"]
+        estimated_complexity: "low"
+        tests:
+          - id: "TC-121-1"
+            description: "模型 CRUD"
+            type: "unit"
+            expected_result: "增删改查成功"
+
+      - id: "T-122"
+        name: "天气查询工具"
+        description: "和风天气 API 接入，实时天气+7日预报+穿衣建议"
+        priority: "P1"
+        dependencies: []
+        estimated_complexity: "medium"
+        tests:
+          - id: "TC-122-1"
+            description: "查询天气"
+            type: "integration"
+            expected_result: "返回天气数据"
+
+      - id: "T-123"
+        name: "饮食健康工具"
+        description: "饮食记录 + 营养估算 + 饮水提醒"
+        priority: "P1"
+        dependencies: ["T-121"]
+        estimated_complexity: "medium"
+        tests:
+          - id: "TC-123-1"
+            description: "记录饮食"
+            type: "unit"
+            expected_result: "记录成功"
+
+      - id: "T-124"
+        name: "习惯打卡工具"
+        description: "创建习惯、打卡、连续天数统计、断签提醒"
+        priority: "P1"
+        dependencies: ["T-121"]
+        estimated_complexity: "medium"
+        tests:
+          - id: "TC-124-1"
+            description: "打卡+连续统计"
+            type: "unit"
+            expected_result: "连续天数正确"
+
+      - id: "T-125"
+        name: "购物清单数据库模型"
+        description: "创建 ShoppingItem 表"
+        priority: "P1"
+        dependencies: ["T-109"]
+        estimated_complexity: "low"
+        tests:
+          - id: "TC-125-1"
+            description: "模型 CRUD"
+            type: "unit"
+            expected_result: "增删改查成功"
+
+      - id: "T-126"
+        name: "购物清单工具"
+        description: "添加/分类/勾选已购/清空"
+        priority: "P1"
+        dependencies: ["T-125"]
+        estimated_complexity: "low"
+        tests:
+          - id: "TC-126-1"
+            description: "添加和勾选"
+            type: "unit"
+            expected_result: "操作成功"
+
+      - id: "T-127"
+        name: "邮件管理工具"
+        description: "QQ 邮箱 IMAP 收件 + SMTP 发件 + AI 摘要"
+        priority: "P1"
+        dependencies: ["T-103"]
+        estimated_complexity: "high"
+        tests:
+          - id: "TC-127-1"
+            description: "获取未读邮件"
+            type: "integration"
+            expected_result: "邮件列表"
+
+      - id: "T-128"
+        name: "出行规划工具"
+        description: "高德地图路线规划 + POI 搜索"
+        priority: "P1"
+        dependencies: []
+        estimated_complexity: "medium"
+        tests:
+          - id: "TC-128-1"
+            description: "路线规划"
+            type: "integration"
+            expected_result: "路线方案"
+
+      - id: "T-129"
+        name: "笔记数据库模型"
+        description: "创建 Note 表"
+        priority: "P1"
+        dependencies: ["T-109"]
+        estimated_complexity: "low"
+        tests:
+          - id: "TC-129-1"
+            description: "Note CRUD"
+            type: "unit"
+            expected_result: "增删改查成功"
+
+      - id: "T-130"
+        name: "备忘笔记工具"
+        description: "本地 CRUD + Notion API 同步 + 失败降级"
+        priority: "P1"
+        dependencies: ["T-129"]
+        estimated_complexity: "medium"
+        tests:
+          - id: "TC-130-1"
+            description: "创建笔记+Notion同步"
+            type: "integration"
+            expected_result: "本地保存+Notion创建"
+          - id: "TC-130-2"
+            description: "Notion 失败降级"
+            type: "unit"
+            expected_result: "本地保留不丢失"
+
+      - id: "T-131"
+        name: "注册 P1 工具到 Agent"
+        description: "将所有 P1 工具注册到 LangGraph Agent 并测试"
+        priority: "P1"
+        dependencies: ["T-122", "T-123", "T-124", "T-126", "T-127", "T-128", "T-130"]
+        estimated_complexity: "medium"
+        tests:
+          - id: "TC-131-1"
+            description: "多工具自然语言调用"
+            type: "integration"
+            expected_result: "各工具正确响应"
+
+      # ── P2 功能 ──
+      - id: "T-132"
+        name: "新闻摘要工具"
+        description: "RSS 聚合 + AI 摘要生成"
+        priority: "P2"
+        dependencies: ["T-103"]
+        estimated_complexity: "medium"
+        tests:
+          - id: "TC-132-1"
+            description: "获取新闻摘要"
+            type: "integration"
+            expected_result: "摘要列表"
+
+      - id: "T-133"
+        name: "读书计划数据库模型"
+        description: "创建 ReadingPlan 表"
+        priority: "P2"
+        dependencies: ["T-109"]
+        estimated_complexity: "low"
+        tests:
+          - id: "TC-133-1"
+            description: "ReadingPlan CRUD"
+            type: "unit"
+            expected_result: "增删改查成功"
+
+      - id: "T-134"
+        name: "读书学习工具"
+        description: "计划创建 + 进度追踪 + 落后提醒"
+        priority: "P2"
+        dependencies: ["T-133"]
+        estimated_complexity: "medium"
+        tests:
+          - id: "TC-134-1"
+            description: "创建计划和更新进度"
+            type: "unit"
+            expected_result: "进度更新正确"
+
+      - id: "T-135"
+        name: "智能家居工具"
+        description: "通用适配器接口 + Mock 设备测试"
+        priority: "P2"
+        dependencies: []
+        estimated_complexity: "medium"
+        tests:
+          - id: "TC-135-1"
+            description: "Mock 设备控制"
+            type: "unit"
+            expected_result: "Mock 响应正确"
+
+      # ── 前端完善 ──
+      - id: "T-136"
+        name: "数据面板页"
+        description: "记账图表（Recharts）、打卡日历、习惯统计"
+        priority: "P1"
+        dependencies: ["T-116", "T-124", "T-120"]
+        estimated_complexity: "high"
+        tests:
+          - id: "TC-136-1"
+            description: "图表渲染"
+            type: "unit"
+            expected_result: "图表正确显示"
+
+      - id: "T-137"
+        name: "设置页"
+        description: "个人信息、API 配置、默认城市、常用地址"
+        priority: "P2"
+        dependencies: ["T-120"]
+        estimated_complexity: "medium"
+        tests:
+          - id: "TC-137-1"
+            description: "设置表单渲染"
+            type: "unit"
+            expected_result: "表单元素存在"
+
+      - id: "T-138"
+        name: "侧边栏"
+        description: "桌面端展开、移动端隐藏，功能分组导航"
+        priority: "P1"
+        dependencies: ["T-120"]
+        estimated_complexity: "medium"
+        tests:
+          - id: "TC-138-1"
+            description: "侧边栏折叠展开"
+            type: "unit"
+            expected_result: "切换正确"
+
+      - id: "T-139"
+        name: "响应式布局"
+        description: "mobile / tablet / desktop 三断点适配"
+        priority: "P1"
+        dependencies: ["T-138"]
+        estimated_complexity: "medium"
+        tests:
+          - id: "TC-139-1"
+            description: "断点切换"
+            type: "e2e"
+            expected_result: "布局正确切换"
+
+      - id: "T-140"
+        name: "暗色模式"
+        description: "跟随系统 + 手动切换"
+        priority: "P2"
+        dependencies: ["T-139"]
+        estimated_complexity: "medium"
+        tests:
+          - id: "TC-140-1"
+            description: "主题切换"
+            type: "unit"
+            expected_result: "颜色正确更新"
+
+      # ── 部署 ──
+      - id: "T-141"
+        name: "Dockerfile"
+        description: "编写 backend + frontend 的 Dockerfile"
+        priority: "P1"
+        dependencies: []
+        estimated_complexity: "low"
+        tests:
+          - id: "TC-141-1"
+            description: "Docker build 成功"
+            type: "integration"
+            expected_result: "镜像构建成功"
+
+      - id: "T-142"
+        name: "docker-compose.yml"
+        description: "编排 backend + frontend + PostgreSQL + Redis"
+        priority: "P1"
+        dependencies: ["T-141"]
+        estimated_complexity: "low"
+        tests:
+          - id: "TC-142-1"
+            description: "docker-compose up 成功"
+            type: "integration"
+            expected_result: "所有服务启动"
+
+      - id: "T-143"
+        name: "端到端集成测试"
+        description: "完整流程：注册→登录→对话→各功能"
+        priority: "P1"
+        dependencies: ["T-131"]
+        estimated_complexity: "high"
+        tests:
+          - id: "TC-143-1"
+            description: "完整用户流程"
+            type: "e2e"
+            expected_result: "全流程通过"
+
+      - id: "T-144"
+        name: "性能优化"
+        description: "API 响应、首屏加载、数据库查询优化"
+        priority: "P2"
+        dependencies: ["T-143"]
+        estimated_complexity: "medium"
+        tests:
+          - id: "TC-144-1"
+            description: "性能基准测试"
+            type: "integration"
+            expected_result: "达到可接受水平"
+
+      - id: "T-145"
+        name: "安全审查"
+        description: "SQL 注入、XSS、CSRF、敏感数据泄露检查"
+        priority: "P1"
+        dependencies: ["T-143"]
+        estimated_complexity: "medium"
+        tests:
+          - id: "TC-145-1"
+            description: "安全扫描"
+            type: "integration"
+            expected_result: "无严重漏洞"
+
+# ─── 上下文恢复 Prompt ───
+context_recovery_prompt: |
+  你是一个编码智能体，正在按照增量循环模式开发项目「LifeButler — 个人生活管家」。
+
+  当前是新一轮循环的开始，你的上下文已被清空。
+  请按以下步骤恢复上下文：
+
+  1. 读取 `TODO.md`，找到第一个状态为 [Todo] 的任务
+  2. 读取 `DEV_LOG.md` 末尾 20 行，了解上一轮的情况
+  3. 如果当前任务涉及 UI，读取 `UI_DESIGN_GUIDE.md`
+  4. 读取当前任务所在模块的已有代码，理解上下文
+
+  然后按照 TDD 流程开发：写测试 → 写代码 → 跑测试 → 提交
+
+  规则：
+  - 一次只做一个任务
+  - 测试失败最多重试 3 次
+  - 3 次全失败则记录到 FAILURES.md，跳过继续下一个
+  - 严格遵循 UI_DESIGN_GUIDE.md 的设计规范
+  - 每完成一个任务必须 git commit
+  - 代码注释使用中文
+
+# ─── 验收标准 ───
+acceptance_criteria:
+  - description: "用户可以通过邮箱注册和登录"
+    verification: "手动测试注册登录流程"
+  - description: "对话可以流式输出"
+    verification: "发送消息后观察流式效果"
+  - description: "自然语言正确路由到 15 个工具"
+    verification: "逐一测试每个功能的自然语言触发"
+  - description: "登录时显示今日概览"
+    verification: "登录后检查管家问候和汇总卡片"
+  - description: "所有 P0 功能测试通过"
+    verification: "运行测试套件，P0 用例全部绿灯"
+  - description: "UI 风格一致（温暖治愈）"
+    verification: "检查所有页面是否遵循 UI_DESIGN_GUIDE.md"
+  - description: "敏感数据加密存储"
+    verification: "检查数据库中财务/邮件数据为密文"
+  - description: "Docker 一键部署"
+    verification: "docker-compose up 后所有功能正常"

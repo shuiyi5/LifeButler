@@ -1,0 +1,112 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap');
+
+@layer base {
+  body {
+    @apply bg-background text-text-primary font-sans antialiased;
+    font-size: 15px;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .dark body {
+    @apply bg-background-dark text-text-primary-dark;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary text-white rounded-btn px-6 py-2.5 font-medium
+           hover:bg-primary-hover active:bg-primary-active
+           disabled:opacity-45 disabled:cursor-not-allowed
+           transition-all duration-200 ease-in-out;
+  }
+
+  .btn-secondary {
+    @apply bg-background border-[1.5px] border-primary text-primary rounded-btn px-6 py-2.5
+           hover:bg-primary-light
+           disabled:opacity-45 disabled:cursor-not-allowed
+           transition-all duration-200;
+  }
+
+  .btn-soft {
+    @apply bg-soft text-text-primary rounded-btn px-6 py-2.5
+           hover:bg-[#EDE3DA]
+           disabled:opacity-45 disabled:cursor-not-allowed
+           transition-all duration-200;
+  }
+
+  .btn-danger {
+    @apply bg-error text-white rounded-btn px-6 py-2.5
+           hover:opacity-90
+           disabled:opacity-45 disabled:cursor-not-allowed
+           transition-all duration-200;
+  }
+
+  .input-field {
+    @apply h-11 border-[1.5px] border-border bg-surface rounded-input px-4
+           placeholder:text-text-secondary
+           focus:border-primary focus:outline-none focus:ring-[3px] focus:ring-primary/10
+           transition-all duration-200;
+  }
+
+  .input-error {
+    @apply border-error focus:border-error focus:ring-error/10;
+  }
+
+  .card {
+    @apply bg-surface rounded-card shadow-low p-5
+           hover:shadow-mid hover:-translate-y-px
+           transition-all duration-200;
+  }
+
+  .bubble-user {
+    @apply text-white rounded-bubble px-4 py-3 max-w-[75%] ml-auto;
+    background: linear-gradient(135deg, #E8835A, #EE9B78);
+    border-radius: 18px 18px 4px 18px;
+  }
+
+  .bubble-assistant {
+    @apply bg-surface text-text-primary rounded-bubble px-4 py-3 max-w-[75%] mr-auto;
+    border-radius: 18px 18px 18px 4px;
+  }
+
+  .nav-item {
+    @apply flex flex-col items-center gap-1 text-text-secondary
+           hover:text-primary transition-colors duration-200;
+  }
+
+  .nav-item-active {
+    @apply text-primary;
+  }
+
+  .sidebar-item {
+    @apply flex items-center gap-3 px-4 py-2.5 rounded-btn text-text-secondary
+           hover:bg-primary-light hover:text-primary
+           transition-all duration-200 cursor-pointer;
+  }
+
+  .sidebar-item-active {
+    @apply bg-primary-light text-primary border-l-[3px] border-primary;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #F0E6DD;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #E8835A;
+}

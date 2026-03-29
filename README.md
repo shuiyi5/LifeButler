@@ -2,6 +2,17 @@
 
 > 一个主动关怀型 AI 生活管家，通过自然语言对话管理你的日程、财务、健康、出行等 15 大生活场景，像贴心管家一样主动提醒和照顾你。
 
+[![GitHub](https://img.shields.io/badge/GitHub-LifeButler-blue?logo=github)](https://github.com/shuiyi5/LifeButler)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
+## 项目演示
+
+<!-- 添加项目截图 -->
+![主界面](docs/images/dashboard.png)
+![对话界面](docs/images/chat.png)
+
+> 💡 提示：截图文件请放置在 `docs/images/` 目录下
+
 ## 功能特性
 
 - 📅 **日程管理**：创建、查询、修改日程事件，智能冲突检测
@@ -43,7 +54,7 @@
 ### 安装步骤
 ```bash
 # 1. 克隆项目
-git clone <https://github.com/shuiyi5/LifeButler.git>
+git clone https://github.com/shuiyi5/LifeButler.git
 cd LifeButler
 
 # 2. 安装后端依赖

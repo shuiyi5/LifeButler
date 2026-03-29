@@ -43,7 +43,7 @@
 ### 安装步骤
 ```bash
 # 1. 克隆项目
-git clone <repo-url>
+git clone <https://github.com/shuiyi5/LifeButler.git>
 cd LifeButler
 
 # 2. 安装后端依赖

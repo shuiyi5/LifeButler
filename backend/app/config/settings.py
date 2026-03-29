@@ -38,6 +38,17 @@ class Settings(BaseSettings):
     NOTION_API_KEY: str = ""
     NOTION_DATABASE_ID: str = ""
 
+    # ─── 语音识别 ───
+    STT_PROVIDER: str = "openai"
+    XUNFEI_APP_ID: str = ""
+    XUNFEI_API_KEY: str = ""
+    XUNFEI_API_SECRET: str = ""
+    BAIDU_APP_ID: str = ""
+    BAIDU_API_KEY: str = ""
+    BAIDU_SECRET_KEY: str = ""
+    OPENAI_API_KEY: str = ""
+    OPENAI_BASE_URL: str = "https://api.openai.com/v1"
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

@@ -86,6 +86,8 @@ export default {
         'slide-up': 'slide-up 0.2s ease-out',
         'scale-in': 'scale-in 0.25s ease-out',
         'ripple': 'ripple 0.6s ease-out',
+        'cursor-blink': 'cursor-blink 1s infinite',
+        'pulse-soft': 'pulse-soft 2s ease-in-out infinite',
       },
       keyframes: {
         'bounce-dot': {
@@ -107,6 +109,14 @@ export default {
         'ripple': {
           '0%': { transform: 'scale(0)', opacity: '0.5' },
           '100%': { transform: 'scale(4)', opacity: '0' },
+        },
+        'cursor-blink': {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0' },
+        },
+        'pulse-soft': {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.6' },
         },
       },
     },
